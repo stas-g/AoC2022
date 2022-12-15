@@ -148,7 +148,7 @@ TOT_NEEDED = 30000000
 min([x for x in dir_sizes if (AVAIL + x >= TOT_NEEDED)])
 
 
-
+#day 8
 
 
 
