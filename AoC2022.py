@@ -149,96 +149,177 @@ min([x for x in dir_sizes if (AVAIL + x >= TOT_NEEDED)])
 
 
 #day 8
+z = [list(x.strip()) for x in open("trees.txt")]
+# z = [list(x.strip()) for x in open("trees_test.txt")]
+z = [[int(w) for w in x] for x in z]
 
-
-
-
-
-
-
-
-
-
-file_system = {"/": {'tot_size': 0, "children": []}}
-
-pwd = "/"
-i = 0
-while i < len(z):
-    print("%s: dir %s" %(i, pwd))
-    w = z[i]
-    i = i + 1
-    if w[1] == "cd":
-        pwd_tmp = w[2]
-        if pwd_tmp == "..":
-            print("dir %s <- dir %s" %(file_system[pwd]["parent"], pwd))
-            pwd = file_system[pwd]["parent"]
-        else:
-            if pwd_tmp not in file_system.keys():
-                file_system[pwd_tmp] = {"parent": pwd, "tot_size": 0, "children": []}
-            print("dir %s -> dir %s" %(pwd, pwd_tmp))
-            pwd = pwd_tmp
-    else:
-        w = z[i]
-        while (w[0] != "$") & (i < len(z)):
-            if w[0] == "dir":
-                print("dir %s: contains dir %s" %(pwd, w[1]))
-                if w[1] not in file_system.keys():
-                    file_system[w[1]] = {"parent": pwd, "tot_size": 0, "children": []}
-                    file_system[pwd]["children"] = file_system[pwd]["children"] + [w[1]]
-            else: 
-                file_system[pwd]["tot_size"] = file_system[pwd]["tot_size"] + int(w[0])
-            # print(i)
-            i = i + 1
-            if i < len(z):
-                w = z[i]
-
-
-dir_sizes = {}
-for k,v in file_system.items():
-    dir_size = v["tot_size"]
-    chld, chld_tmp = v['children'], v['children']
-    while len(chld_tmp) > 0:
-        chld_tmp2 = []
-        for a in chld_tmp:
-            chld = chld + file_system[a]["children"]
-            chld_tmp2 = chld_tmp2 + file_system[a]["children"]
-        chld_tmp = chld_tmp2
-
-    dir_size = dir_size + sum([file_system[a]["tot_size"] for a in chld])
-    dir_sizes[k] = dir_size
-
-sum([v for v in dir_sizes.values() if v <= 100000])
-
-cur_targets = [file_system["/"]]
-while len(cur_targets) > 0:
-    for z in cur_targets:
-        dir_size = z["tot_size"]
-        chld, chld_tmp = z['children'], z['children']
-        while len(chld_tmp) > 0:
-            chld_tmp2 = []
-            for a in chld_tmp:
-                chld = chld + file_system[a]["children"]
-                chld_tmp2 = chld_tmp2 + file_system[a]["children"]
-            chld_tmp = chld_tmp2
-
-        dir_size = dir_size + sum([file_system[a]["tot_size"] for a in chld])
-        dir_sizes[k] = dir_size
-
-sum([v for v in dir_sizes.values() if v <= 100000])
-
-
-def calculate_size(d):
-    cur_targets = [d]
-    dir_size = d["tot_size"]
-    while len(cur_targets) > 0:
-        chld = [z['children'] for z in cur_targets][0]
-        chld = [x for x in chld.values()]
-        dir_size = dir_size + sum([z['tot_size'] for z in chld])
-        cur_targets = chld
-    return(dir_size)
-
-
-sum_ = 0
+#8.1
+vis = []
+m = 0
 for i in range(len(z)):
-    if z[i][0] not in ["$", "dir"]:
-        sum_ = sum_ + int(z[i][0])
+    tmp = []
+    for j in range(len(z[i])):
+        if ((i in [0, len(z) - 1]) or (j in [0, len(z[i]) - 1])):
+            tmp.append(1)
+            m += 1
+        elif z[i][j] == 0:
+            tmp.append(0)
+        else:
+            zz = z[i][j]
+            w = all([z[i][l] < zz for l in range(0, j)])
+            e = all([z[i][l] < zz for l in range(j + 1, len(z[i]))])
+            n = all([z[k][j] < zz for k in range(0, i)])
+            s = all([z[k][j] < zz for k in range(i + 1, len(z))])
+            if any([w, e, n, s]):
+                tmp.append(1)
+                m += 1
+            else:
+                tmp.append(0)
+    vis.append(tmp)
+
+#8.2
+sscore = []
+for i in range(len(z)):
+    tmp = []
+    for j in range(len(z[i])):
+        if ((i in [0, len(z) - 1]) or (j in [0, len(z[i]) - 1])):
+            tmp.append(0)
+        elif z[i][j] == 0:
+            tmp.append(1)
+        else:
+            zz = z[i][j]
+            f, l, cw = True, j - 1, 0
+            while (f & (l >= 0)):
+                if z[i][l] >= zz:
+                    f = False
+                if z[i][l] <= zz:
+                    l -= 1
+                cw += 1
+            
+            f, l, ce = True, j + 1, 0
+            while (f & (l <= len(z[i]) - 1)):
+                if z[i][l] >= zz:
+                    f = False
+                if z[i][l] <= zz:
+                    l += 1
+                ce += 1
+                    
+            f, l, cn = True, i - 1, 0
+            while (f & (l >= 0)):
+                if z[l][j] >= zz:
+                    f = False
+                if z[l][j] <= zz:
+                    l -= 1
+                cn += 1
+            
+            f, l, cs = True, i + 1, 0
+            while (f & (l <= len(z) - 1)):
+                if z[l][j] >= zz:
+                    f = False
+                if z[l][j] <= zz:
+                    l += 1
+                cs += 1
+            tmp.append(cw * ce * cn * cs)
+    sscore.append(tmp)
+
+max([max(x) for x in sscore])
+
+
+#day 9
+z = [list(x.strip().split(" ")) for x in open("ropes.txt")]
+# z = [list(x.strip().split(" ")) for x in open("ropes_test.txt")]
+# z = [list(x.strip().split(" ")) for x in open("ropes_test2.txt")]
+for i in range(len(z)):
+    z[i][1] = int(z[i][1])
+
+def sign(x):
+    if x < 0:
+        return(-1)
+    elif x > 0: 
+        return(1)
+    else:
+        return(0)
+    
+DIR = {"L": {"h": -1, "v": 0}, "R": {"h": 1, "v": 0}, "D": {"h": 0, "v": -1}, "U": {"h": 0, "v": 1}}
+
+#9.1
+#start at the origin
+h_x, h_y = [0], [0]
+t_x, t_y = [0], [0]
+
+for i in range(len(z)):
+    x = z[i]
+    h = DIR[x[0]]["h"]
+    v = DIR[x[0]]["v"]
+
+    for i in range(x[1]):
+        h_x.append(h_x[-1] + h)
+        h_y.append(h_y[-1] + v)
+        
+        d_x = h_x[-1] - t_x[-1]
+        d_y = h_y[-1] - t_y[-1]
+        if ((abs(d_x) < 2) & (abs(d_y) < 2)):
+            t_x.append(t_x[-1])
+            t_y.append(t_y[-1])
+        else:
+            t_x.append(t_x[-1] + 1 * sign(d_x))
+            t_y.append(t_y[-1] + 1 * sign(d_y))
+
+ans = set("%s.%s" %(t_x[i], t_y[i]) for i in range(len(t_x)))
+
+#9.2
+r_x, r_y = [], []
+for i in range(10):
+    r_x.append([0])
+    r_y.append([0])
+
+for i in range(len(z)):
+    x = z[i]
+    h = DIR[x[0]]["h"]
+    v = DIR[x[0]]["v"]
+
+    for i in range(x[1]):
+        r_x[0].append(r_x[0][-1] + h)
+        r_y[0].append(r_y[0][-1] + v)
+        
+        for j in range(1, len(r_x)):
+            d_x = r_x[j - 1][-1] - r_x[j][-1]
+            d_y = r_y[j - 1][-1] - r_y[j][-1]
+            if ((abs(d_x) < 2) & (abs(d_y) < 2)):
+                r_x[j].append(r_x[j][-1])
+                r_y[j].append(r_y[j][-1])
+            else:
+                r_x[j].append(r_x[j][-1] + 1 * sign(d_x))
+                r_y[j].append(r_y[j][-1] + 1 * sign(d_y))
+
+ans = set("%s.%s" %(r_x[9][i], r_y[9][i]) for i in range(len(r_x[9])))
+
+
+#day 10
+z = [list(x.strip().split(" ")) for x in open("signal_test.txt")]
+z = [list(x.strip().split(" ")) for x in open("signal.txt")]
+
+#10.1    
+t = 1
+et = []
+event = []
+
+for w in z:
+    if w[0] == "noop":
+        t += 1
+    else:
+        t += 2
+        et.append(t)
+        event.append(int(w[1]))
+        
+check_t = [20, 60, 100, 140, 180, 220]
+x_t = []
+tt, i, x = 0, 0, 1
+for s in check_t:
+    while tt <= s:
+        x += event[i]
+        i += 1
+        tt = et[i]
+    x_t.append(x)
+    
+sum([x_t[i] * check_t[i] for i in range(len(x_t))])
