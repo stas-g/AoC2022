@@ -2,6 +2,9 @@ import os as os
 import numpy as np
 from itertools import *
 from math import floor
+from math import prod
+import re as re
+from copy import deepcopy
 
 os.chdir("/home/nfg/AoC2022")
 
@@ -323,3 +326,134 @@ for s in check_t:
     x_t.append(x)
     
 sum([x_t[i] * check_t[i] for i in range(len(x_t))])
+
+#10.2
+ett = [t - 1 for t in et]
+x = 1
+screen = [[],[],[],[],[],[]]
+for t in range(1, ett[-1] + 4):
+    print(t)
+    pos = (t - 1) % 40
+    j = floor((t - 1)/40)
+    if pos in [x - 1, x, x + 1]:
+        screen[j].append("#")
+    else:
+        screen[j].append(".")
+    if t in ett:
+        xt = it.compress(event, [t == x for x in ett])
+        xt = [x for x in xt][0]
+        x += xt
+        
+ 
+#day 11       
+z = [list(x.strip().split(" ")) for x in open("monkeys_test.txt")]
+# z = [list(x.strip().split(" ")) for x in open("monkeys.txt")]
+ind = [i for i in range(len(z)) if z[i][0] == "Monkey"]
+
+monkeys0 = []
+for i in ind:
+    tmp = [z[k] for k in range(i, i + 6)] 
+    items = [int(re.sub(",","", k)) for k in tmp[1][2:]]
+    op = "".join(tmp[2][3:])
+    test = int(tmp[3][3])
+    pass_ = int(tmp[4][5])
+    fail = int(tmp[5][5])
+    monkeys0.append({"items": items, "operation": op, "test": test, "pass": pass_, "fail": fail, "count": 0})
+
+#11.1
+counts = [0 for i in range(len(monkeys0))]
+monkey_items = [[] for i in range(len(monkeys0))]
+monkeys = deepcopy(monkeys0)
+
+for k in range(20):
+    for m in monkeys:
+        for j in range(len(m["items"])):
+            m["count"] += 1
+            i = m["items"].pop(0)
+            old = i
+            i = eval(m["operation"])
+            i = floor(i/3)
+            if (i % m["test"] == 0):
+                monkeys[m["pass"]]["items"].append(i)
+            else:
+                monkeys[m["fail"]]["items"].append(i)
+                
+counts = [m["count"] for m in monkeys]
+counts.sort()
+prod(counts[-2:])
+
+#11.2
+monkeys2 = deepcopy(monkeys0)
+for k in range(20):
+    print(k)
+    for m in monkeys2:
+        for j in range(len(m["items"])):
+            m["count"] += 1
+            i = m["items"].pop(0)
+            old = i
+            i = eval(m["operation"])
+            if i > 1500:
+                i = i - 1000
+            if (i % m["test"] == 0):
+                monkeys2[m["pass"]]["items"].append(i)
+            else:
+                monkeys2[m["fail"]]["items"].append(i)
+                
+counts = [m["count"] for m in monkeys2]
+counts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def factorise(n):
+    factors = []
+    i = 2
+    while n != 1:
+        while (n % i == 0):
+            factors.append(i)
+            n = n/i
+        i += 1
+    return(factors)
+                
+    
+monkeys2 = deepcopy(monkeys0)
+test = [x["test"] for x in monkeys2]
+for k in range(20):
+    print(k)
+    for m in monkeys2:
+        for j in range(len(m["items"])):
+            m["count"] += 1
+            i = m["items"].pop(0)
+            old = i
+            i = eval(m["operation"])
+            if (i % m["test"] == 0):
+                i = i/m["test"]
+                monkeys2[m["pass"]]["items"].append(i)
+            else:
+                f = factorise(i)
+                tt = max([ff for ff in f if f not in test])
+                i = i/tt
+                monkeys2[m["fail"]]["items"].append(i)
+                
+counts = [m["count"] for m in monkeys2]
+counts.sort()
+prod(counts[-2:])
+
+n = 20 
+i = 2
+
+while i * i < n:
+    while n%i == 0:
+        n = n / i
+    i = i + 1
