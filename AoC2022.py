@@ -5,6 +5,7 @@ from math import floor
 from math import prod
 import re as re
 from copy import deepcopy
+from string import ascii_lowercase
 
 os.chdir("/home/nfg/AoC2022")
 
@@ -78,7 +79,7 @@ while (flag and i <= len(z) - 3):
 ans
 
 
-#day7
+#day 7
 z = [x.strip().split(" ") for x in open("file_system.txt")]
 # z = [x.rstrip().split(" ") for x in open("file_system_test.txt")]
 
@@ -403,10 +404,126 @@ counts = [m["count"] for m in monkeys2]
 counts
 
 
+#day 12 
+z = [x.strip() for x in open("mini_mountain.txt")]
+z = [x.strip() for x in open("mountain.txt")]
+z = [[ord(i) for i in x] for x in z]
+for i in range(len(z)):
+    for j in range(len(z[0])):
+        # print("%s - %s", [i, j])
+        if z[i][j] == ord("S"):
+            z[i][j] = ord('a') - 1
+        if z[i][j] == ord("E"):
+            z[i][j] = ord('z') + 1
+            
+#where is the starting point?
+for i in range(len(z)):
+    for j in range(len(z[0])):
+        # print("%s - %s", [i, j])
+        if z[i][j] == (ord("a") - 1):
+            x = i
+            y = j
+            break
+
+pts0 = [[x, y]]
+
+#where is the end point? 
+for i in range(len(z)):
+    for j in range(len(z[0])):
+        # print("%s - %s", [i, j])
+        if z[i][j] == (ord("z") + 1):
+            xn = i
+            yn = j
+            break
+
+def flatlist(l):
+    x = []
+    for sublist in l:
+        if type(sublist) is list:
+            for item in sublist:
+                x.append(item)
+        else:
+            x.append(sublist)
+    return x
+
+#pts = list of current points; l = length of the paths; paths = paths of walks; z = data
+def find_summit(pts, l, paths, z):
+    pts_new, l_new, paths_new = [], [], []
+    xlim, ylim = len(z) - 1, len(z[0]) - 1
+    # unique visited points; keep track of visited points
+    p_unique = flatlist(paths)
+    for i in range(len(pts)):
+        E = ord("z") + 1
+        
+        x = pts[i][0]
+        y = pts[i][1]
+        w0 = z[x][y]
+        if w0 == E:
+            print(l[i])
+            return(l[i])
+        else:
+            p = "%s.%s" %(x - 1, y)
+            if ((x > 0) & (p not in p_unique)):
+                w = z[x - 1][y]
+                if w - w0 <= 1: 
+                    l_new.append(l[i] + 1)
+                    pts_new.append([x - 1, y])
+                    p_unique.append(p)
+                    tmp = deepcopy(paths[i])
+                    tmp.append(p)
+                    paths_new.append(tmp)
+                        
+            p = "%s.%s" %(x + 1, y)
+            if ((x < xlim) & (p not in p_unique)):
+                w = z[x + 1][y]
+                if w - w0 <= 1: 
+                    l_new.append(l[i] + 1)
+                    pts_new.append([x + 1, y])
+                    p_unique.append(p)
+                    tmp = deepcopy(paths[i])
+                    tmp.append(p)
+                    paths_new.append(tmp)
+                        
+            p = "%s.%s" %(x, y - 1)
+            if ((y > 0) & (p not in p_unique)):
+                w = z[x][y - 1]
+                if w - w0 <= 1: 
+                    l_new.append(l[i] + 1)
+                    pts_new.append([x, y - 1])
+                    p_unique.append(p)
+                    tmp = deepcopy(paths[i])
+                    tmp.append(p)
+                    paths_new.append(tmp)
+                        
+            p = "%s.%s" %(x, y + 1)
+            if ((y < ylim) & (p not in p_unique)):
+                w = z[x][y + 1]
+                if w - w0 <= 1: 
+                    l_new.append(l[i] + 1)
+                    pts_new.append([x, y + 1])
+                    p_unique.append(p)
+                    tmp = deepcopy(paths[i])
+                    tmp.append(p)
+                    paths_new.append(tmp)
+                   
+    find_summit(pts_new, l_new, paths_new, z)
+
+                        
+find_summit(pts0, [0], [["0.0"]], z)          
+
+# ww = find_summit(pts0, [0], [["0.0"]], z)   
+# ww = find_summit(ww[0], ww[1], ww[2], z); ww
+
+z[pts0[0][0]][pts0[0][1]] = ord("a")
+
+#only viable starts are in the first column
+pts0 = [[i, 0] for i in range(len(z))]
+for u in pts0:
+    v = ("%s.%s" %(u[0], u[1]))
+    find_summit([u], [0], [[v]], z)   
 
 
-
-
+#day 13
 
 
 
