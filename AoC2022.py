@@ -446,6 +446,7 @@ def flatlist(l):
             x.append(sublist)
     return x
 
+#12.1
 #pts = list of current points; l = length of the paths; paths = paths of walks; z = data
 def find_summit(pts, l, paths, z):
     pts_new, l_new, paths_new = [], [], []
@@ -506,24 +507,82 @@ def find_summit(pts, l, paths, z):
                     tmp.append(p)
                     paths_new.append(tmp)
                    
-    find_summit(pts_new, l_new, paths_new, z)
+    return(find_summit(pts_new, l_new, paths_new, z))
 
                         
 find_summit(pts0, [0], [["0.0"]], z)          
 
-# ww = find_summit(pts0, [0], [["0.0"]], z)   
-# ww = find_summit(ww[0], ww[1], ww[2], z); ww
-
+#12.2
 z[pts0[0][0]][pts0[0][1]] = ord("a")
 
 #only viable starts are in the first column
 pts0 = [[i, 0] for i in range(len(z))]
+out = []
 for u in pts0:
     v = ("%s.%s" %(u[0], u[1]))
-    find_summit([u], [0], [[v]], z)   
+    out.append(find_summit([u], [0], [[v]], z))
+
+min(out)
 
 
 #day 13
+z = [x.strip() for x in open("distress_test.txt")]
+z = [x.strip() for x in open("distress.txt")]
+z = [[eval(z[3*i]), eval(z[3 * i + 1])] for i in range(floor(len(z)/3) + 1)]
+
+#returns: False (not in the right order), True (in the right order)
+def parse_distress(l, r):
+    for i in range(max(len(l), len(r))):
+        if i > (len(r) - 1):
+            #right side run out of items
+            print('wrong order')
+            # return(False)
+        if i > (len(l) - 1):
+            #left side run out of items
+            print('correct order')
+            # return(True)
+        ll = l[i]
+        rr = r[i]
+        ind = isinstance(ll, int) + (isinstance(rr, int))
+        if ind == 2:
+            #both entries are integers
+            if ll < rr:
+                print('correct order')
+                # return(True)
+            elif ll > rr:
+                print('wrong order')
+                # return(False)
+        else:
+            #only one entry is a list
+            if not isinstance(ll, list):
+                ll = [ll]
+            if not isinstance(rr, list):
+                rr = [rr]
+            print("shouldn't be here")
+            return(parse_distress(ll, rr))
+ 
+ind = []                
+for i in range(len(z)):
+    ind.append(parse_distress(z[i][0], z[i][1]))
+        
+i = 1
+l = z[i][0]
+r = z[i][1]
+parse_distress(l, r)
+
+
+
+def foo(x):
+    if x == 1:
+        return True 
+    else:
+        print(x)
+        return foo(x - 1)
+
+
+
+
+
 
 
 
