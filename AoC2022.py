@@ -535,49 +535,65 @@ def parse_distress(l, r):
     for i in range(max(len(l), len(r))):
         if i > (len(r) - 1):
             #right side run out of items
-            print('wrong order')
-            # return(False)
+            return(False)
         if i > (len(l) - 1):
             #left side run out of items
-            print('correct order')
-            # return(True)
+            return(True)
         ll = l[i]
         rr = r[i]
         ind = isinstance(ll, int) + (isinstance(rr, int))
         if ind == 2:
             #both entries are integers
             if ll < rr:
-                print('correct order')
-                # return(True)
+                return(True)
             elif ll > rr:
-                print('wrong order')
-                # return(False)
+                return(False)
+            else:
+                if ((len(l) == len(r)) & (len(l) == (i + 1))):
+                    return(None)
         else:
             #only one entry is a list
             if not isinstance(ll, list):
                 ll = [ll]
             if not isinstance(rr, list):
                 rr = [rr]
-            print("shouldn't be here")
-            return(parse_distress(ll, rr))
- 
-ind = []                
+            tmp = parse_distress(ll, rr)
+            if tmp is not None:
+                return(tmp)
+
+#13.1
+w = []
 for i in range(len(z)):
-    ind.append(parse_distress(z[i][0], z[i][1]))
-        
-i = 1
-l = z[i][0]
-r = z[i][1]
-parse_distress(l, r)
+    l = z[i][0]
+    r = z[i][1]
+    w.append(parse_distress(l, r))
+
+sum([i + 1 for i in range(len(w)) if w[i]])
+sum(w)
+
+#13.2        
+z.append([[[2]], [[6]]])
+z = flatlist(z)
+
+comps = [[0 for i in range(len(z))] for j in range(len(z))]
+
+for i in range(len(z)):
+    for j in range(len(z)):
+        tmp = parse_distress(z[i], z[j])
+        if tmp is None:
+            tmp = 0
+        comps[i][j] = 1 * tmp 
+
+ind = [sum(x) for x in comps]
+z_ord = []
+for i in reversed(range(len(z))):
+    j = [j for j in range(len(ind)) if ind[j] == i][0]
+    z_ord.append(z[j])
+
+ii = [k + 1 for k in range(len(z_ord)) if (z_ord[k] == [[6]] or z_ord[k] == [[2]])]
+ii[0] * ii[1]
 
 
-
-def foo(x):
-    if x == 1:
-        return True 
-    else:
-        print(x)
-        return foo(x - 1)
 
 
 
@@ -633,3 +649,72 @@ while i * i < n:
     while n%i == 0:
         n = n / i
     i = i + 1
+    
+    
+#l_ind/r_ind = location of elements to be considered, lists; to start let l_ind, r_ind = 0, 0 
+def parse_distress(l_ind, r_ind, z):
+    l = z[0]
+    r = z[1]
+    if len(l_ind) > 0:
+        for k in range(len(l_ind)):
+            l = l[k]
+    if len(r_ind) > 0:
+        for k in range(len(l_ind)):
+            l = l[k]    
+    for i in range(max(len(l), len(r))):
+        if i > (len(r) - 1):
+            #right side run out of items
+            print('wrong order')
+            # return(False)
+        if i > (len(l) - 1):
+            #left side run out of items
+            print('correct order')
+            # return(True)
+        ll = l[i]
+        rr = r[i]
+        ind = isinstance(ll, int) + (isinstance(rr, int))
+        if ind == 2:
+            #both entries are integers
+            if ll < rr:
+                print('correct order')
+                # return(True)
+            elif ll > rr:
+                print('wrong order')
+                # return(False)
+            else:
+                if ((i == max(len(l)) - 1) & (i == max(len(r)) - 1)):
+                    if (len(l_ind) == 1):
+                        l_ind += 1
+                    else:
+                        ltmp = z[0]
+                        for k in range(len(l_ind) - 1):
+                            ltmp = ltmp[k]
+                        while (l_ind[-1] == (len(ltmp) - 1)):
+                            l_ind.pop()
+                            ltmp = z[0]
+                            for k in range(len(l_ind) - 1):
+                                ltmp = ltmp[k]
+                        l_ind[-1] += 1
+
+                    if (len(r_ind) == 1):
+                        r_ind += 1
+                    else:                        
+                        rtmp = z[0]
+                        for k in range(len(r_ind) - 1):
+                            rtmp = rtmp[k]
+                        while (r_ind[-1] == (len(rtmp) - 1)):
+                            r_ind.pop()
+                            rtmp = z[0]
+                            for k in range(len(r_ind) - 1):
+                                rtmp = rtmp[k]
+                        l_ind[-1] += 1                                                   
+                    
+                return(parse_distress(l_ind, r_ind, z))                    
+        else:
+            #only one entry is a list
+            if not isinstance(ll, list):
+                ll = [ll]
+                l_ind.append(0)
+            if not isinstance(rr, list):
+                rr = [rr]
+            return(parse_distress(ll, rr)) 
