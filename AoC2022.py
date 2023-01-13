@@ -3,6 +3,7 @@ import numpy as np
 from itertools import *
 from math import floor
 from math import prod
+from math import ceil
 import re as re
 from copy import deepcopy
 from string import ascii_lowercase
@@ -270,6 +271,7 @@ for i in range(len(z)):
             t_y.append(t_y[-1] + 1 * sign(d_y))
 
 ans = set("%s.%s" %(t_x[i], t_y[i]) for i in range(len(t_x)))
+len(ans)
 
 #9.2
 r_x, r_y = [], []
@@ -405,7 +407,7 @@ counts
 
 
 #day 12 
-z = [x.strip() for x in open("mini_mountain.txt")]
+# z = [x.strip() for x in open("mini_mountain.txt")]
 z = [x.strip() for x in open("mountain.txt")]
 z = [[ord(i) for i in x] for x in z]
 for i in range(len(z)):
@@ -526,7 +528,7 @@ min(out)
 
 
 #day 13
-z = [x.strip() for x in open("distress_test.txt")]
+# z = [x.strip() for x in open("distress_test.txt")]
 z = [x.strip() for x in open("distress.txt")]
 z = [[eval(z[3*i]), eval(z[3 * i + 1])] for i in range(floor(len(z)/3) + 1)]
 
@@ -569,7 +571,6 @@ for i in range(len(z)):
     w.append(parse_distress(l, r))
 
 sum([i + 1 for i in range(len(w)) if w[i]])
-sum(w)
 
 #13.2        
 z.append([[[2]], [[6]]])
@@ -578,11 +579,13 @@ z = flatlist(z)
 comps = [[0 for i in range(len(z))] for j in range(len(z))]
 
 for i in range(len(z)):
-    for j in range(len(z)):
+    for j in range(i, len(z)):
         tmp = parse_distress(z[i], z[j])
         if tmp is None:
-            tmp = 0
-        comps[i][j] = 1 * tmp 
+            comps[i][j] = 0
+        else:
+            comps[i][j] = 1 * tmp
+            comps[j][i] = 1 * (not tmp) 
 
 ind = [sum(x) for x in comps]
 z_ord = []
@@ -592,6 +595,131 @@ for i in reversed(range(len(z))):
 
 ii = [k + 1 for k in range(len(z_ord)) if (z_ord[k] == [[6]] or z_ord[k] == [[2]])]
 ii[0] * ii[1]
+
+
+#day 14
+z = [x.strip().split(" -> ") for x in open("sand_test.txt")]
+z = [x.strip().split(" -> ") for x in open("sand.txt")]
+z = [[[int(v) for v in x.split(",")] for x in w] for w in z]
+
+occupied = []
+for w in z:
+    for i in range(len(w) - 1):
+        a = w[i]
+        b = w[i + 1]
+        ix = b[0] - a[0]
+        iy = b[1] - a[1]
+        if ix != 0:
+            if ix > 0:
+                tmp = range(a[0], b[0] + 1)
+            else: 
+                tmp = range(b[0], a[0] + 1)
+            occupied += [[w, a[1]] for w in tmp]
+        else:
+            if iy > 0:
+                tmp = range(a[1], b[1] + 1)
+            else: 
+                tmp = range(b[1], a[1] + 1)
+            occupied += [[b[0], w] for w in tmp]
+ 
+ymax0 = max([x[1] for x in occupied])
+xmin0 = min([x[0] for x in occupied])
+xmax0 = max([x[0] for x in occupied])
+#rescale co-ordinates in order to represent the system as a matrix (list of lists)
+origin = [500 - xmin0, 0]
+occupied = [[w[0] - xmin0, w[1]] for w in occupied]
+occ = [[0 for i in range(xmax0 - xmin0 + 1)] for j in range(ymax0 + 1)]
+for w in occupied:
+    occ[w[1]][w[0]] = 1
+
+xmin = min([x[0] for x in occupied])
+xmax = max([x[0] for x in occupied])
+
+#14.1
+k = 0
+not_chasm = True
+while not_chasm:
+    flag = True
+    x = origin[0]
+    y = origin[1]
+    while flag:
+        if (y == ymax0):
+            flag = False
+            not_chasm = False
+            break
+        if ((x == xmax) & (occ[y + 1][x - 1] == 1)):
+            flag = False
+            not_chasm = False
+            break
+        if (x == xmin):
+            flag = False
+            not_chasm = False
+            break
+        if occ[y + 1][x] == 0:
+            y += 1
+        elif occ[y + 1][x - 1] == 0:
+            x -= 1
+            y += 1
+        elif occ[y + 1][x + 1] == 0:
+            x += 1
+            y += 1
+        else: 
+            occ[y][x] = 2
+            k += 1
+            flag = False
+
+#14.2
+ymax = ymax0 + 2
+ym = ceil(ymax/2)
+origin = [500 - xmin0 + ymax , 0]
+occupied2 = [[w[0] + ymax, w[1]] for w in occupied]
+occ2 = [[0 for i in range(xmax + 2 * ymax + 1)] for j in range(ymax )]
+#floor
+occ2.append([1 for i in range(xmax + 2 * ymax + 1)])
+for w in occupied2:
+    occ2[w[1]][w[0]] = 1
+
+k = 0
+not_full = True
+while not_full:
+    flag = True
+    x = origin[0]
+    y = origin[1]
+    while flag:
+        if occ2[origin[1]][origin[0]] == 2:
+            flag = False
+            not_full = False
+            break        
+        if occ2[y + 1][x] == 0:
+            y += 1
+        elif occ2[y + 1][x - 1] == 0:
+            x -= 1
+            y += 1
+        elif occ2[y + 1][x + 1] == 0:
+            x += 1
+            y += 1
+        else: 
+            occ2[y][x] = 2
+            k += 1
+            flag = False
+
+
+#day 15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -651,70 +779,3 @@ while i * i < n:
     i = i + 1
     
     
-#l_ind/r_ind = location of elements to be considered, lists; to start let l_ind, r_ind = 0, 0 
-def parse_distress(l_ind, r_ind, z):
-    l = z[0]
-    r = z[1]
-    if len(l_ind) > 0:
-        for k in range(len(l_ind)):
-            l = l[k]
-    if len(r_ind) > 0:
-        for k in range(len(l_ind)):
-            l = l[k]    
-    for i in range(max(len(l), len(r))):
-        if i > (len(r) - 1):
-            #right side run out of items
-            print('wrong order')
-            # return(False)
-        if i > (len(l) - 1):
-            #left side run out of items
-            print('correct order')
-            # return(True)
-        ll = l[i]
-        rr = r[i]
-        ind = isinstance(ll, int) + (isinstance(rr, int))
-        if ind == 2:
-            #both entries are integers
-            if ll < rr:
-                print('correct order')
-                # return(True)
-            elif ll > rr:
-                print('wrong order')
-                # return(False)
-            else:
-                if ((i == max(len(l)) - 1) & (i == max(len(r)) - 1)):
-                    if (len(l_ind) == 1):
-                        l_ind += 1
-                    else:
-                        ltmp = z[0]
-                        for k in range(len(l_ind) - 1):
-                            ltmp = ltmp[k]
-                        while (l_ind[-1] == (len(ltmp) - 1)):
-                            l_ind.pop()
-                            ltmp = z[0]
-                            for k in range(len(l_ind) - 1):
-                                ltmp = ltmp[k]
-                        l_ind[-1] += 1
-
-                    if (len(r_ind) == 1):
-                        r_ind += 1
-                    else:                        
-                        rtmp = z[0]
-                        for k in range(len(r_ind) - 1):
-                            rtmp = rtmp[k]
-                        while (r_ind[-1] == (len(rtmp) - 1)):
-                            r_ind.pop()
-                            rtmp = z[0]
-                            for k in range(len(r_ind) - 1):
-                                rtmp = rtmp[k]
-                        l_ind[-1] += 1                                                   
-                    
-                return(parse_distress(l_ind, r_ind, z))                    
-        else:
-            #only one entry is a list
-            if not isinstance(ll, list):
-                ll = [ll]
-                l_ind.append(0)
-            if not isinstance(rr, list):
-                rr = [rr]
-            return(parse_distress(ll, rr)) 
