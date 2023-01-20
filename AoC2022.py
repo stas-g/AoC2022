@@ -705,77 +705,163 @@ while not_full:
 
 
 #day 15
+#a = list of intervals
+def union(a):
+    if len(a) == 0:
+        return([])
+    a = sorted(a)
+    b = [a[0]]
+    a.pop(0)
+    for aa in a:
+        if ((b[-1][1] + 1 >= aa[0]) & (b[-1][1] < aa[1])):
+            b[-1][1] = aa[1]
+        elif (b[-1][1] < aa[0]):
+            b.append(aa)
+    return(b)    
+            
+z = [re.split("\s|=|,|:", x) for x in open("sensors_test.txt")]
+# z = [re.split("\s|=|,|:", x) for x in open("sensors.txt")]
+z = [[int(x[i]) for i in [3, 6, 13, 16]] for x in z]
+
+#manhattan distance between each sensor and beacon
+d = [abs(w[0] - w[2]) + abs(w[1] - w[3]) for w in z]
+
+xmin = min(z[i][0] - d[i] for i in range(len(z)))
+ymin = min(z[i][1] - d[i] for i in range(len(z)))
+
+S = [[w[0] - xmin, w[1] - ymin] for w in z]
+B = [[w[2] - xmin, w[3] - ymin] for w in z]
+xmax = max(x[0] for x in S)
+ymax = max(x[1] for x in S)
+
+def signal(l):
+    out = []
+    for i in range(len(S)):            
+        if ((S[i][1] - d[i] <= l) and (S[i][1] + d[i] >= l)):
+            k = d[i] - abs(S[i][1] - l)
+            out.append([S[i][0] - k, S[i][0] + k])
+    return(union(out))
+
+# l = 2000000 - ymin 
+l = 10 - ymin 
+x = signal(l)      
+x[0][1] - x[0][0]
+
+#x and y coordinates can each be at most 20
+thr = 20
+# thr = 4000000
+flag = True
+l = -1
+while (flag & (l <= thr)):
+    l += 1
+    print(l)
+    ll = signal(l - ymin)
+    if len(ll) > 1:
+        flag = False
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def factorise(n):
-    factors = []
-    i = 2
-    while n != 1:
-        while (n % i == 0):
-            factors.append(i)
-            n = n/i
-        i += 1
-    return(factors)
-                
-    
-monkeys2 = deepcopy(monkeys0)
-test = [x["test"] for x in monkeys2]
-for k in range(20):
+#----------------------------------------------   
+# yet another way
+ 
+lines = [[] for j in range(ymax + max(d) + 1)]   
+for k in range(len(S)):
     print(k)
-    for m in monkeys2:
-        for j in range(len(m["items"])):
-            m["count"] += 1
-            i = m["items"].pop(0)
-            old = i
-            i = eval(m["operation"])
-            if (i % m["test"] == 0):
-                i = i/m["test"]
-                monkeys2[m["pass"]]["items"].append(i)
-            else:
-                f = factorise(i)
-                tt = max([ff for ff in f if f not in test])
-                i = i/tt
-                monkeys2[m["fail"]]["items"].append(i)
-                
-counts = [m["count"] for m in monkeys2]
-counts.sort()
-prod(counts[-2:])
+    dd = d[k]
+    for i in range(-dd, dd + 1):  
+        jj = dd - abs(i)         
+        lines[S[k][1] + i].append([S[k][0] - jj, S[k][0] + jj])
 
-n = 20 
-i = 2
+BS = []
+for q in (B + S):
+    if q not in BS:
+        BS.append(q)
+    
+w = [0 for j in range(len(lines))]
+for i in range(len(BS)):
+    w[BS[i][1]] += 1
 
-while i * i < n:
-    while n%i == 0:
-        n = n / i
-    i = i + 1
-    
-    
+k = 0
+ans = []
+for l in lines:
+    print(k)
+    ans.append(union(l))
+    k += 1
+
+# thr = 2000000
+thr = 10
+x = ans[thr - ymin]
+x[0][1] - x[0][0] + 1 - w[thr - ymin]
+
+j = 0
+flag = True
+lim = 20
+while flag:
+    for a in ans:
+    for i in range(len()):
+        flag = False
+    j += 1
+
+
+
+
+
+
+
+##rubbish
+field = [[0 for i in range(xmax + max(d) + 1)] for j in range(ymax + max(d) + 1)]
+for b in B:
+    field[b[1]][b[0]] = 2
+for s in S:
+    field[s[1]][s[0]] = 2
+
+for k in range(len(z)):
+    dd = d[k]
+    for i in range(-dd, dd + 1):
+        jj = dd - abs(i)
+        for j in range(-jj, jj + 1):
+            x = S[k][0] + i
+            y = S[k][1] + j
+            if (field[y][x] != 2):
+                field[y][x] = 1
+
+f = field[10 - ymin]
+sum([i for i in f if i == 1])
+
+
+
+def isolate_signal(l):
+    line = [0 for i in range(xmax + max(d) + 1)]
+    for i in range(len(S)):
+        if S[i][1] == l:
+            line[S[i][0]] = 2
+        if B[i][1] == l:
+            line[B[i][0]] = 2
+            
+        if ((S[i][1] - d[i] <= l) and (S[i][1] + d[i] >= l)):
+            k = d[i] - abs(S[i][1] - l)
+            for j in range(-k, k + 1):
+                x = S[i][0] + j
+                if (line[x] != 2):
+                    line[x] = 1     
+            
+    return(line)
+
+l = 2000000 - ymin        
+# l = 10 - ymin  
+line = isolate_signal(l)
+sum([i for i in line if i == 1])
+
+
+#x and y coordinates can each be at most 20
+flag = True
+l = -1
+while (flag & (l <= 4000000)):
+    l += 1
+    print(l)
+    ll = isolate_signal(l - ymin)
+    k = 1
+    while (flag & (k < len(ll) - 1)):
+        if ((ll[k - 1] == 1) & (ll[k] == 0) & (ll[k + 1] == 1)):
+            flag = False
+        k += 1
+
